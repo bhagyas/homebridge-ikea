@@ -1,6 +1,6 @@
 var execSync = require('child_process').execSync
 
-const coap = (method, config, payload = "{}") => `${config.coapClient} -u "Client_identity" -k "${config.psk}" -e '${payload}' -m ${method} coaps://${config.ip}/15001/`
+const coap = (method: "get" | "post" | "put", config: IConfig, payload: string = "{}") => `${config.coapClient} -u "Client_identity" -k "${config.psk}" -e '${payload}' -m ${method} coaps://${config.ip}/15001/`
 
 const put = (config, id, payload) => coap("put", config, payload) + id
 const get = (config, id="") => coap("get", config) + id
@@ -188,14 +188,21 @@ const parseDevice = str => {
   */
 }
 
-interface IDevice{
+export interface IDevice{
 
+    name: string;
     type: number;
     reachabilityState: any;
     light: any;
 }
 
-export let getDevice = (config, id) => new Promise<IDevice>((resolve, reject) => {
+export interface IConfig{
+    ip: string;
+    psk: string;
+    coapClient: string;
+}
+
+export let getDevice = (config, id): Promise<IDevice> => new Promise<IDevice>((resolve, reject) => {
 
   var cmd = get(config, id)
   if (config.debug) {

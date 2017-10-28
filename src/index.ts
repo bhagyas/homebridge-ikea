@@ -1,10 +1,8 @@
 import * as os from 'os';
 import * as utils from './utils';
 import * as util from 'util'
-// const utils = require('./utils')
-// const util = require('util')
-// const os = require('os')
-
+import {IDevice} from "./utils";
+import {IConfig} from "./utils";
 
 let Kelvin, Accessory, Service, Characteristic, UUIDGen
 
@@ -36,7 +34,7 @@ export = function(homebridge) {
   homebridge.registerPlatform("homebridge-ikea", "Ikea", IkeaPlatform)
 }
 
-function IkeaPlatform(log, config) {
+function IkeaPlatform(log, config: IConfig) {
   this.log = log
   this.config = config
   this.config.log = this.log
@@ -69,7 +67,7 @@ IkeaPlatform.prototype = {
 
 
 
-function IkeaAccessory(log, config, device) {
+function IkeaAccessory(log, config, device: IDevice) {
   this.name = device.name
   this.config = config
   this.config.log = string => log("[" + this.name + "] " + string)
@@ -191,7 +189,7 @@ IkeaAccessory.prototype = {
               if(typeof device.light[0]["5706"] !== 'undefined' || device.light[0]["5706"].length < 6){
                 device.light[0]["5706"] = "ffcea6" //Default value when it fails polling
               }
-              var hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
+              let hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
               callback(null, hsl[0] * 360)
             })
 
@@ -213,7 +211,7 @@ IkeaAccessory.prototype = {
               if(typeof device.light[0]["5706"] !== 'undefined' || device.light[0]["5706"].length < 6){
                 device.light[0]["5706"] = "ffcea6" //Default value when it fails polling
               }
-              var hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
+              let hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
               callback(null, hsl[1] * 100)
             })
 

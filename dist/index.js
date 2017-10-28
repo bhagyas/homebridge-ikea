@@ -81,9 +81,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 const os = __webpack_require__(1);
 const utils = __webpack_require__(2);
 const util = __webpack_require__(4);
-// const utils = require('./utils')
-// const util = require('util')
-// const os = require('os')
 let Kelvin, Accessory, Service, Characteristic, UUIDGen;
 const UUID_KELVIN = 'C4E24248-04AC-44AF-ACFF-40164E829DBA';
 function IkeaPlatform(log, config) {
@@ -217,7 +214,7 @@ IkeaAccessory.prototype = {
                     if (typeof device.light[0]["5706"] !== 'undefined' || device.light[0]["5706"].length < 6) {
                         device.light[0]["5706"] = "ffcea6"; //Default value when it fails polling
                     }
-                    var hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
+                    let hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
                     callback(null, hsl[0] * 360);
                 });
             })
@@ -238,7 +235,7 @@ IkeaAccessory.prototype = {
                     if (typeof device.light[0]["5706"] !== 'undefined' || device.light[0]["5706"].length < 6) {
                         device.light[0]["5706"] = "ffcea6"; //Default value when it fails polling
                     }
-                    var hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
+                    let hsl = utils.convertRGBToHSL(device.light[0]["5706"]);
                     callback(null, hsl[1] * 100);
                 });
             })
@@ -297,8 +294,8 @@ var execSync = __webpack_require__(3).execSync;
 const coap = (method, config, payload = "{}") => `${config.coapClient} -u "Client_identity" -k "${config.psk}" -e '${payload}' -m ${method} coaps://${config.ip}/15001/`;
 const put = (config, id, payload) => coap("put", config, payload) + id;
 const get = (config, id = "") => coap("get", config) + id;
-const kelvinTopercent = kelvin => (kelvin - 2200) / 18; // 4000
-const percentToKelvin = percent => 2200 + (18 * percent); // 4000
+const kelvinToPercent = (kelvin) => (kelvin - 2200) / 18; // 4000
+const percentToKelvin = (percent) => 2200 + (18 * percent); // 4000
 const colorX = percent => Math.round(33135 - (82.05 * percent)); // 24930
 const colorY = percent => Math.round(27211 - (25.17 * (100 - percent))); // 24694
 exports.getKelvin = colorX => percentToKelvin(Math.round((33135 - colorX) / 82.05));
@@ -312,7 +309,7 @@ exports.setBrightness = (config, id, brightness, callback) => {
     callback(execSync(cmd, { encoding: "utf8" }));
 };
 exports.setKelvin = (config, id, kelvin, callback) => {
-    const values = `{ "3311" : [{ "5709" : ${colorX(kelvinTopercent(kelvin))}, "5710": ${colorY(kelvinTopercent(kelvin))} }] }`;
+    const values = `{ "3311" : [{ "5709" : ${colorX(kelvinToPercent(kelvin))}, "5710": ${colorY(kelvinToPercent(kelvin))} }] }`;
     var cmd = put(config, id, values);
     if (config.debug) {
         config.log(cmd);
