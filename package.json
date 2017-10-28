@@ -27,5 +27,12 @@
   "engines": {
     "node": ">=7.7.2",
     "homebridge": ">=0.2.0"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^3.2.3",
+    "typescript": "^2.5.3"
+  },
+  "dependencies": {
+    "@types/node": "^8.0.47"
   }
 }

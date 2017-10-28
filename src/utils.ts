@@ -5,18 +5,16 @@ const coap = (method, config, payload = "{}") => `${config.coapClient} -u "Clien
 const put = (config, id, payload) => coap("put", config, payload) + id
 const get = (config, id="") => coap("get", config) + id
 
-const kelvinToProcent = kelvin => (kelvin - 2200) / 18 // 4000
-const procentToKelvin = procent => 2200 + (18 * procent) // 4000
-const colorX = procent => Math.round(33135 - (82.05 * procent))  // 24930
-const colorY = procent => Math.round(27211 - (25.17 * (100 - procent))) // 24694
+const kelvinToPercent = (kelvin: number) => (kelvin - 2200) / 18 // 4000
+const percentToKelvin = (percent: number) => 2200 + (18 * percent) // 4000
+const colorX = percent => Math.round(33135 - (82.05 * percent))  // 24930
+const colorY = percent => Math.round(27211 - (25.17 * (100 - percent))) // 24694
 
-const getKelvin = colorX => procentToKelvin(Math.round((33135 - colorX) / 82.05))
+export const getKelvin = colorX => percentToKelvin(Math.round((33135 - colorX) / 82.05))
 
-module.exports.getKelvin = getKelvin
-
-module.exports.setBrightness = (config, id, brightness, callback) => {
-  const arguments = `{ "3311" : [{ "5851" : ${brightness}} ] }`
-  const cmd = put(config, id, arguments)
+export let setBrightness = (config, id, brightness: number, callback) => {
+  const values = `{ "3311" : [{ "5851" : ${brightness}} ] }`
+  const cmd = put(config, id, values)
 
   if (config.debug) {
     config.log(`Setting brightness of ${brightness} for ${id}`)
@@ -26,9 +24,9 @@ module.exports.setBrightness = (config, id, brightness, callback) => {
   callback(execSync(cmd, {encoding: "utf8"}))
 }
 
-module.exports.setKelvin = (config, id, kelvin, callback) => {
-  const arguments = `{ "3311" : [{ "5709" : ${colorX(kelvinToProcent(kelvin))}, "5710": ${colorY(kelvinToProcent(kelvin))} }] }`
-  var cmd = put(config, id, arguments)
+export let setKelvin = (config, id, kelvin, callback) => {
+  const values = `{ "3311" : [{ "5709" : ${colorX(kelvinToPercent(kelvin))}, "5710": ${colorY(kelvinToPercent(kelvin))} }] }`
+  var cmd = put(config, id, values);
 
   if (config.debug) {
     config.log(cmd)
@@ -37,7 +35,7 @@ module.exports.setKelvin = (config, id, kelvin, callback) => {
 }
   
 // Source: http://stackoverflow.com/a/9493060
-const hslToRgb = (h, s, l) => {
+const hslToRgb = (h, s, l): [number,  number,  number] => {
   var r, g, b;
 
   if(s == 0){
@@ -60,7 +58,7 @@ const hslToRgb = (h, s, l) => {
   }
 
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
-}
+};
 
 const hexToRgb = (hex) => {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -71,7 +69,7 @@ const hexToRgb = (hex) => {
     } : null;
 }
 
-const rgbToHsl = (r, g, b) => {
+const rgbToHsl = (r, g, b): [number,  number,  number] => {
     r /= 255, g /= 255, b /= 255;
     var max = Math.max(r, g, b), min = Math.min(r, g, b);
     var h, s, l = (max + min) / 2;
@@ -93,7 +91,7 @@ const rgbToHsl = (r, g, b) => {
 }
 
 // Source http://stackoverflow.com/a/36061908
-const rgbToXy = (red,green,blue) => {
+const rgbToXy = (red?: number,green?: number,blue?:number): [string, string] => {
   red = (red > 0.04045) ? Math.pow((red + 0.055) / (1.0 + 0.055), 2.4) : (red / 12.92);
   green = (green > 0.04045) ? Math.pow((green + 0.055) / (1.0 + 0.055), 2.4) : (green / 12.92);
   blue = (blue > 0.04045) ? Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4) : (blue / 12.92);
@@ -105,12 +103,12 @@ const rgbToXy = (red,green,blue) => {
   return [fx.toPrecision(4),fy.toPrecision(4)];
 }
 
-module.exports.convertRGBToHSL = (hex) => {	
+export let convertRGBToHSL = (hex) => {	
   var c = hexToRgb(hex)
   return rgbToHsl(c.r, c.g, c.b);
 }
 
-module.exports.setColor = (config, id, color, callback) => {
+export let setColor = (config, id, color, callback) => {
   // First we convert hue and saturation
   // to RGB, with 75% lighntess
   const rgb = hslToRgb(color.hue, color.saturation, 0.75);
@@ -118,11 +116,11 @@ module.exports.setColor = (config, id, color, callback) => {
   // CIE L*a*b XY values
   const cie = rgbToXy(...rgb).map(item => {
     // we need to scale the values
-    return Math.floor(100000 * item);
+    return Math.floor(100000 * parseFloat(item));
   });  
   
-  const arguments = `{ "3311" : [{ "5709" : ${cie[0]}, "5710": ${cie[1]} }] }`
-  const cmd = put(config, id, arguments)
+  const values = `{ "3311" : [{ "5709" : ${cie[0]}, "5710": ${cie[1]} }] }`
+  const cmd = put(config, id, values)
   
   if (config.debug) {
     config.log(cmd)
@@ -131,9 +129,9 @@ module.exports.setColor = (config, id, color, callback) => {
 }
 
 // @TODO: Figure out if the gateway actually don't support this
-module.exports.setOnOff = (config, id, state, callback) => {
-  const arguments = `{ "3311" : [{ "5580" : ${state}} ] }`
-  var cmd = put(config, id, arguments)
+export let setOnOff = (config, id, state, callback) => {
+  const values = `{ "3311" : [{ "5580" : ${state}} ] }`
+  var cmd = put(config, id, values)
 
   if (config.debug) {
     config.log(cmd)
@@ -146,7 +144,8 @@ const parseDeviceList = str => {
   return split.pop().slice(1,-1).split(",")
 }
 
-module.exports.getDevices = config => new Promise((resolve, reject) => {
+
+export let getDevices = config => new Promise<Array<IDevice>>((resolve, reject) => {
   var cmd = get(config)
   if (config.debug) {
     config.log(cmd)
@@ -189,7 +188,14 @@ const parseDevice = str => {
   */
 }
 
-module.exports.getDevice = (config, id) => new Promise((resolve, reject) => {
+interface IDevice{
+
+    type: number;
+    reachabilityState: any;
+    light: any;
+}
+
+export let getDevice = (config, id) => new Promise<IDevice>((resolve, reject) => {
 
   var cmd = get(config, id)
   if (config.debug) {

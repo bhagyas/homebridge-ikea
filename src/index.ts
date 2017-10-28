@@ -1,12 +1,16 @@
-const utils = require('./utils')
-const util = require('util')
-const os = require('os')
+import * as os from 'os';
+import * as utils from './utils';
+import * as util from 'util'
+// const utils = require('./utils')
+// const util = require('util')
+// const os = require('os')
+
 
 let Kelvin, Accessory, Service, Characteristic, UUIDGen
 
 const UUID_KELVIN = 'C4E24248-04AC-44AF-ACFF-40164E829DBA'
 
-module.exports = function(homebridge) {
+export = function(homebridge) {
   Accessory = homebridge.platformAccessory
   Service = homebridge.hap.Service
   Characteristic = homebridge.hap.Characteristic
@@ -50,7 +54,7 @@ IkeaPlatform.prototype = {
     const self = this
     const foundAccessories = []
 
-    const devices = await utils.getDevices(self.config)
+    const devices = await utils.getDevices(self.config);
 
     await Promise.all(devices.map(async deviceId => {
       const device = await utils.getDevice(self.config, deviceId)
@@ -62,6 +66,8 @@ IkeaPlatform.prototype = {
     callback(foundAccessories)
   }
 }
+
+
 
 function IkeaAccessory(log, config, device) {
   this.name = device.name
@@ -100,7 +106,7 @@ IkeaAccessory.prototype = {
     lightbulbService
     .setCharacteristic(Characteristic.StatusActive, this.device.reachabilityState)
     .setCharacteristic(Characteristic.On, this.device.light[0]["5850"])
-    .setCharacteristic(Characteristic.Brightness, parseInt(Math.round(this.device.light[0]["5851"] * 100 / 255)))
+    .setCharacteristic(Characteristic.Brightness, parseInt(String(Math.round(this.device.light[0]["5851"] * 100 / 255))))
     
 
     lightbulbService
@@ -114,7 +120,7 @@ IkeaAccessory.prototype = {
     lightbulbService
     .getCharacteristic(Characteristic.On)
     .on('get', callback => {
-      utils.getDevice(self.config, self.device.instanceId).then(device => {
+      utils.getDevice(self.config, self.device.instanceId).then(device=> {
         self.currentBrightness = device.light[0]["5851"]
         self.currentState = device.light[0]["5850"]
         callback(null, self.currentState)
@@ -142,7 +148,7 @@ IkeaAccessory.prototype = {
       utils.getDevice(self.config, self.device.instanceId).then(device => {
         self.currentBrightness = device.light[0]["5851"]
         self.currentState = device.light[0]["5850"]
-        callback(null, parseInt(Math.round(self.currentBrightness * 100 / 255)))
+        callback(null, parseInt(String(Math.round(self.currentBrightness * 100 / 255))))
       })
     })
     .on('set', (powerOn, callback) => {
