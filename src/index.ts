@@ -43,7 +43,7 @@ function IkeaPlatform(log, config: IConfig) {
   if (!this.config.coapClient && (os.platform() !== "darwin" && os.platform() !== "linux")) {
     throw Error("No coap-client found, please specify the path to it using coapClient")
   }
-  this.config.coapClient = this.config.coapClient || `${__dirname}/bin/coap-client-${os.platform()}`
+  this.config.coapClient = this.config.coapClient || `${__dirname}../bin/coap-client-${os.platform()}`
 
 }
 
@@ -94,7 +94,7 @@ IkeaAccessory.prototype = {
     .setCharacteristic(Characteristic.Model, this.device.details["1"])
     .setCharacteristic(Characteristic.FirmwareRevision, this.device.details["3"])
 
-    const self = this
+    const self = this;
 
     const lightbulbService = new Service.Lightbulb(self.name)
     

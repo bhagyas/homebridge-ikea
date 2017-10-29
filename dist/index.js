@@ -91,7 +91,7 @@ function IkeaPlatform(log, config) {
     if (!this.config.coapClient && (os.platform() !== "darwin" && os.platform() !== "linux")) {
         throw Error("No coap-client found, please specify the path to it using coapClient");
     }
-    this.config.coapClient = this.config.coapClient || `${__dirname}/bin/coap-client-${os.platform()}`;
+    this.config.coapClient = this.config.coapClient || `${__dirname}../bin/coap-client-${os.platform()}`;
 }
 IkeaPlatform.prototype = {
     accessories: function (callback) {
