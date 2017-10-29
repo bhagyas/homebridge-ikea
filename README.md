@@ -1,6 +1,8 @@
-# Homebridge Ikea
+# Homebridge Ikea Typescript
 
 A [homebridge](https://github.com/nfarina/homebridge) plugin for [Ikeas Trådfri](http://www.ikea.com/se/sv/catalog/categories/departments/lighting/36812/) lamps using [Ikeas Trådfri gateway](http://www.ikea.com/se/sv/catalog/products/40337806/) with an [Ikea trådfri lightbulb](http://www.ikea.com/se/sv/catalog/products/10318263/). As of now it works just fine for turn lamps on/off and setting the brighness and changing the temperature.
+
+Note: This is based on the original homebridge-ikea plugin. The code has been migrated to Typescript to ensure better quality.
 
 ## Functionality
 
