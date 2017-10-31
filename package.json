@@ -33,6 +33,7 @@
     "typescript": "^2.5.3"
   },
   "dependencies": {
-    "@types/node": "^8.0.47"
+    "@types/node": "^8.0.47",
+    "shortid": "^2.2.8"
   }
 }

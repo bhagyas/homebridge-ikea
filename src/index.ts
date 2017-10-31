@@ -35,10 +35,10 @@ export = function(homebridge) {
 }
 
 function IkeaPlatform(log, config: IConfig) {
-  this.log = log
-  this.config = config
-  this.config.log = this.log
-  this.devices = []
+  this.log = log;
+  this.config = config;
+  this.config.log = this.log;
+  this.devices = [];
 
   if (!this.config.coapClient && (os.platform() !== "darwin" && os.platform() !== "linux")) {
     throw Error("No coap-client found, please specify the path to it using coapClient")
@@ -49,8 +49,11 @@ function IkeaPlatform(log, config: IConfig) {
 
 IkeaPlatform.prototype = {
   accessories: async function(callback) {
-    const self = this
-    const foundAccessories = []
+    const self = this;
+    const foundAccessories = [];
+
+    console.info("Setting up identity...");
+    this.config.presharedKey = await utils.getPresharedKey(self.config);
 
     const devices = await utils.getDevices(self.config);
 
@@ -67,15 +70,15 @@ IkeaPlatform.prototype = {
 
 
 
-function IkeaAccessory(log, config, device: IDevice) {
-  this.name = device.name
-  this.config = config
-  this.config.log = string => log("[" + this.name + "] " + string)
-  this.device = device
+function IkeaAccessory(log, config: IConfig, device: IDevice) {
+  this.name = device.name;
+  this.config = config;
+  this.config.log = string => log("[" + this.name + "] " + string);
+  this.device = device;
 
-  this.currentBrightness = this.device.light[0]["5851"]
-  this.currentState = this.device.light[0]["5850"]
-  this.previousBrightness = this.currentBrightness
+  this.currentBrightness = this.device.light[0]["5851"];
+  this.currentState = this.device.light[0]["5850"];
+  this.previousBrightness = this.currentBrightness;
   this.color = {}
 }
 

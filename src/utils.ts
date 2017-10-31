@@ -1,9 +1,18 @@
 var execSync = require('child_process').execSync
+var shortid = require('shortid');
 
-const coap = (method: "get" | "post" | "put", config: IConfig, payload: string = "{}") => `${config.coapClient} -u "Client_identity" -k "${config.psk}" -e '${payload}' -m ${method} coaps://${config.ip}/15001/`
+const coap = (method: "get" | "post" | "put", config: IConfig, payload: string = "{}", preAuth: boolean = false) => {
+    return `${config.coapClient} -u "${preAuth ? "Client_identity": config.clientIdentity}" -k "${(preAuth ? config.psk : config['presharedKey'])}" -e '${payload}' -m ${method} coaps://${config.ip}/${(preAuth? 15011: 15001)}/`;
+}
 
 const put = (config, id, payload) => coap("put", config, payload) + id
 const get = (config, id="") => coap("get", config) + id
+const post = (config, id = "") => {
+    let clientIdentity = "hb-" + shortid.generate();
+    config.clientIdentity = clientIdentity;
+    let payload = {"9090": clientIdentity };
+    return coap("post", config, JSON.stringify(payload), true) + id + "9063";
+}
 
 const kelvinToPercent = (kelvin: number) => (kelvin - 2200) / 18 // 4000
 const percentToKelvin = (percent: number) => 2200 + (18 * percent) // 4000
@@ -146,13 +155,30 @@ const parseDeviceList = str => {
 
 
 export let getDevices = config => new Promise<Array<IDevice>>((resolve, reject) => {
-  var cmd = get(config)
+  let cmd = get(config);
   if (config.debug) {
     config.log(cmd)
   }
 
   resolve(parseDeviceList(execSync(cmd, {encoding: "utf8"})))
 })
+
+
+export let getPresharedKey = config => new Promise<String>((resolve) => {
+    let cmd = post(config);
+    resolve(parsePresharedKey(execSync(cmd,  {encoding: 'utf8'})));
+});
+
+const parsePresharedKey = str => {
+    const split = str.trim().split("\n")
+    try{
+        const json = JSON.parse(split.pop())
+        let presharedKey = json['9091'];
+        return presharedKey;
+    }catch (e){
+        throw new Error("Error obtaining preshared key.");
+    }
+};
 
 const parseDevice = str => {
   const split = str.trim().split("\n")
@@ -200,6 +226,10 @@ export interface IConfig{
     ip: string;
     psk: string;
     coapClient: string;
+
+    //adding support for improved dtls
+    clientIdentity: string;
+    preAuth: boolean;
 }
 
 export let getDevice = (config, id): Promise<IDevice> => new Promise<IDevice>((resolve, reject) => {
